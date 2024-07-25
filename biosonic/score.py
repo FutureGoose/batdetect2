@@ -21,20 +21,30 @@ def load_json_files(data_dir):
     print(f"Found {len(json_files)} JSON files.\n")
     if len(json_files) == 0:
         print(f"No JSON files found in directory: {data_dir}")
+
     data = []
     for json_file in json_files:
+        # print(f"Loading JSON file: {json_file}")
         with open(json_file, 'r') as f:
             data.append(json.load(f))
+
     return data
 
 
 def extract_true_label(filename):
     """Gets true class from id entry"""
-    # relevant parts
-    parts = filename.split('_')[:2]
-    # format result to match class names
-    result = f'{parts[0].capitalize()} {parts[1]}'
-    return result
+    # Split the filename by underscores
+    parts = filename.split('_')
+    
+    # Find the first part that contains a number and stop there
+    for i, part in enumerate(parts):
+        if any(char.isdigit() for char in part):
+            break
+    
+    # Join the parts up to the first number to form the true label
+    true_label = ' '.join(parts[:i])
+    
+    return true_label
 
 
 def extract_labels_and_predictions(data):
@@ -45,14 +55,18 @@ def extract_labels_and_predictions(data):
         for annotation in entry['annotation']:
             y_true.append(true_class)
             y_pred.append(annotation['class'])
+    
     return y_true, y_pred
 
 
 def calculate_metrics(y_true, y_pred):
     # convert class names to binary labels
-    classes = list(set(y_true))
+    classes = sorted(list(set(y_true)))
+    print(classes)
+   
     y_true_binary = [1 if y == classes[0] else 0 for y in y_true]
-    y_pred_binary = [1 if y == classes[0] else 0 for y in y_pred]
+    y_pred_binary = [1 if y == classes[0] else 0 for y in y_pred]   
+
 
     # auroc only possible with atleast 1 TP
     if len(set(y_true_binary)) == 1:
@@ -83,6 +97,7 @@ def main(data_dir):
 
 if __name__ == "__main__":
     script_dir = Path(__file__).resolve().parent
-    data_dir = script_dir / "../data/results"
+    data_dir = (script_dir / "../data/results").resolve()
     print(f"Data directory: {data_dir}")
+
     main(data_dir)
