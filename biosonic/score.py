@@ -12,6 +12,7 @@ The filename is present in the 'id' entry at the bottom of each JSON file. Hence
 import os
 import json
 import glob
+from pathlib import Path
 from sklearn.metrics import roc_auc_score, balanced_accuracy_score, precision_recall_curve, auc
 
 
@@ -78,5 +79,6 @@ def main(data_dir):
     print(f"Balanced Accuracy: {balanced_acc}")
 
 if __name__ == "__main__":
-    data_dir = "C:/wagon/code/biosonic_local/batdetect2/data/results"
+    script_dir = Path(__file__).resolve().parent
+    data_dir = script_dir / "../data/results"
     main(data_dir)
