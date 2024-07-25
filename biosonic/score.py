@@ -18,6 +18,9 @@ from sklearn.metrics import roc_auc_score, balanced_accuracy_score, precision_re
 
 def load_json_files(data_dir):
     json_files = glob.glob(os.path.join(data_dir, '**/*.json'), recursive=True)
+    print(f"Found {len(json_files)} JSON files.\n")
+    if len(json_files) == 0:
+        print(f"No JSON files found in directory: {data_dir}")
     data = []
     for json_file in json_files:
         with open(json_file, 'r') as f:
@@ -81,4 +84,5 @@ def main(data_dir):
 if __name__ == "__main__":
     script_dir = Path(__file__).resolve().parent
     data_dir = script_dir / "../data/results"
+    print(f"Data directory: {data_dir}")
     main(data_dir)
