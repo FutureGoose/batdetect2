@@ -1,8 +1,0 @@
-id,det_prob,start_time,end_time,high_freq,low_freq,class,class_prob
-0,0.669,2.0365,2.0431,61736,52109,Pipistrellus pygmaeus,0.651
-1,0.6,2.1835,2.1915,64108,51250,Pipistrellus pygmaeus,0.537
-2,0.624,2.4445,2.4512,61055,51250,Pipistrellus pygmaeus,0.603
-3,0.632,2.6195,2.6263,60297,52109,Pipistrellus pygmaeus,0.563
-4,0.659,2.7915,2.7982,64957,51250,Pipistrellus pygmaeus,0.589
-5,0.658,2.8735,2.8807,58952,51250,Pipistrellus pygmaeus,0.586
-6,0.612,2.9615,2.9704,60163,50390,Pipistrellus pygmaeus,0.481
