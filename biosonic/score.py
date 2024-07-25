@@ -54,28 +54,49 @@ def extract_labels_and_predictions(data):
         true_class = extract_true_label(entry['id'])
         for annotation in entry['annotation']:
             y_true.append(true_class)
-            y_pred.append(annotation['class'])
+            y_pred.append((annotation['class'], annotation['class_prob']))
     
     return y_true, y_pred
 
 
 def calculate_metrics(y_true, y_pred):
-    # convert class names to binary labels
-    classes = sorted(list(set(y_true)))
-    print(classes)
-   
-    y_true_binary = [1 if y == classes[0] else 0 for y in y_true]
-    y_pred_binary = [1 if y == classes[0] else 0 for y in y_pred]   
+    # normalize the case of class names for accurate comparison
+    y_pred = [(y[0].lower(), y[1]) for y in y_pred]
+
+    y_true_binary = []
+    y_pred_binary = []
+    y_scores = []
+    
+    for i in range(len(y_true)):
+        # get probabilities for AUC
+        y_scores.append(y_pred[i][1])
+
+        # True Positive: Prediction and actual are the same, and probability is above threshold
+        if y_true[i] == y_pred[i][0] and y_pred[i][1] >= 0.5:
+            y_true_binary.append(1)
+            y_pred_binary.append(1)
+        # False Negative: Prediction and actual are the same, but probability is below threshold
+        elif y_true[i] == y_pred[i][0] and y_pred[i][1] < 0.5:
+            y_true_binary.append(1)
+            y_pred_binary.append(0)
+        # False Positive: Prediction and actual are different, but probability is above threshold
+        elif y_true[i] != y_pred[i][0] and y_pred[i][1] >= 0.5:
+            y_true_binary.append(0)
+            y_pred_binary.append(1)
+        # True Negative: Prediction and actual are different, and probability is below threshold
+        else:
+            y_true_binary.append(0)
+            y_pred_binary.append(0)
 
 
     # auroc only possible with atleast 1 TP
     if len(set(y_true_binary)) == 1:
         auroc = None
     else:
-        auroc = roc_auc_score(y_true_binary, y_pred_binary)
+        auroc = roc_auc_score(y_true_binary, y_scores)
+
     balanced_acc = balanced_accuracy_score(y_true_binary, y_pred_binary)
-    
-    precision, recall, _ = precision_recall_curve(y_true_binary, y_pred_binary)
+    precision, recall, _ = precision_recall_curve(y_true_binary, y_scores)
     auprc = auc(recall, precision)
     
     return auroc, balanced_acc, auprc
