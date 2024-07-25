@@ -1,7 +1,7 @@
 import os
 import json
 import glob
-from sklearn.metrics import roc_auc_score, balanced_accuracy_score
+from sklearn.metrics import roc_auc_score, balanced_accuracy_score, precision_recall_curve, auc
 
 def load_json_files(data_dir):
     json_files = glob.glob(os.path.join(data_dir, '**/*.json'), recursive=True)
@@ -29,13 +29,18 @@ def calculate_metrics(y_true, y_pred):
 
     auroc = roc_auc_score(y_true_binary, y_pred_binary)
     balanced_acc = balanced_accuracy_score(y_true_binary, y_pred_binary)
-    return auroc, balanced_acc
+    
+    precision, recall, _ = precision_recall_curve(y_true_binary, y_pred_binary)
+    auprc = auc(recall, precision)
+    
+    return auroc, balanced_acc, auprc
 
 def main(data_dir):
     data = load_json_files(data_dir)
     y_true, y_pred = extract_labels_and_predictions(data)
-    auroc, balanced_acc = calculate_metrics(y_true, y_pred)
+    auroc, balanced_acc, auprc = calculate_metrics(y_true, y_pred)
     print(f"AUROC: {auroc}")
+    print(f"AUPRC: {auprc}")
     print(f"Balanced Accuracy: {balanced_acc}")
 
 if __name__ == "__main__":
