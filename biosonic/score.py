@@ -3,6 +3,7 @@ import json
 import glob
 from sklearn.metrics import roc_auc_score, balanced_accuracy_score, precision_recall_curve, auc
 
+
 def load_json_files(data_dir):
     json_files = glob.glob(os.path.join(data_dir, '**/*.json'), recursive=True)
     data = []
@@ -11,15 +12,27 @@ def load_json_files(data_dir):
             data.append(json.load(f))
     return data
 
+
+
+def extract_true_label(filename):
+    """Gets true class from id entry"""
+    # relevant parts
+    parts = filename.split('_')[:2]
+    # format result to match class names
+    result = f'{parts[0].capitalize()} {parts[1]}'
+    return result
+
+
 def extract_labels_and_predictions(data):
     y_true = []
     y_pred = []
     for entry in data:
-        class_name = entry['class_name']
+        true_class = extract_true_label(entry['id'])
         for annotation in entry['annotation']:
-            y_true.append(class_name)
+            y_true.append(true_class)
             y_pred.append(annotation['class'])
     return y_true, y_pred
+
 
 def calculate_metrics(y_true, y_pred):
     # Convert class names to binary labels
@@ -35,6 +48,7 @@ def calculate_metrics(y_true, y_pred):
     
     return auroc, balanced_acc, auprc
 
+
 def main(data_dir):
     data = load_json_files(data_dir)
     y_true, y_pred = extract_labels_and_predictions(data)
@@ -44,5 +58,5 @@ def main(data_dir):
     print(f"Balanced Accuracy: {balanced_acc}")
 
 if __name__ == "__main__":
-    data_dir = "C:/wagon/code/biosonic_local/batdetect2/data/results"
+    data_dir = "C:/wagon/code/biosonic_local/batdetect2/data/results_placeholder"
     main(data_dir)
