@@ -1,0 +1,5 @@
+# Detect with lib
+batdetect2 detect C:\wagon\code\biosonic_local\batdetect2\data\eptesicus_nilssonii C:\wagon\code\biosonic_local\batdetect2\data 0.3
+
+# Detect local 
+python -m batdetect2.cli detect C:\wagon\code\biosonic_local\batdetect2\data\pipistrellus_pygmaeus C:\wagon\code\biosonic_local\batdetect2\data\results 0.6

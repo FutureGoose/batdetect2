@@ -1,0 +1,5 @@
+id,det_prob,start_time,end_time,high_freq,low_freq,class,class_prob
+0,0.646,0.2785,0.2871,53400,46953,Pipistrellus pipistrellus,0.6
+1,0.637,1.5735,1.5804,55335,48671,Pipistrellus pipistrellus,0.628
+2,0.613,1.6545,1.6653,57008,47812,Pipistrellus pipistrellus,0.575
+3,0.642,2.1705,2.1788,52712,46953,Pipistrellus pipistrellus,0.625
