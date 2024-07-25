@@ -1,3 +1,14 @@
+"""
+This script processes the results output data from running inference with batdetect2.
+When running 'detect' with batdetect2, you get one JSON file (and one CSV file) as the result of inference on each audio file.
+The script calculates the metrics AUROC, AUPRC, and Balanced Accuracy for the detection outputs.
+It recursively goes through all files in the specified folders, collects data from all JSON files, and aggregates them.
+Each JSON file corresponds to an audio file and contains multiple predictions due to various patterns in the spectrograms.
+This function compares every single prediction per JSON file with the true label, which is derived from the filename.
+The filename is present in the 'id' entry at the bottom of each JSON file. Hence, there is only one true label per JSON file/audio file.
+"""
+
+
 import os
 import json
 import glob
@@ -13,14 +24,12 @@ def load_json_files(data_dir):
     return data
 
 
-
 def extract_true_label(filename):
     """Gets true class from id entry"""
     # relevant parts
     parts = filename.split('_')[:2]
     # format result to match class names
     result = f'{parts[0].capitalize()} {parts[1]}'
-    #print(result)
     return result
 
 
@@ -40,11 +49,6 @@ def calculate_metrics(y_true, y_pred):
     classes = list(set(y_true))
     y_true_binary = [1 if y == classes[0] else 0 for y in y_true]
     y_pred_binary = [1 if y == classes[0] else 0 for y in y_pred]
-
-    #print("Unique classes in y_true:", set(y_true))
-    #print("Unique classes in y_pred:", set(y_pred))
-    #print("y_true:", y_true)
-    #print("y_pred:", y_pred)
 
     # auroc only possible with atleast 1 TP
     if len(set(y_true_binary)) == 1:
