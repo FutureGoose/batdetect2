@@ -20,6 +20,7 @@ def extract_true_label(filename):
     parts = filename.split('_')[:2]
     # format result to match class names
     result = f'{parts[0].capitalize()} {parts[1]}'
+    #print(result)
     return result
 
 
@@ -35,12 +36,21 @@ def extract_labels_and_predictions(data):
 
 
 def calculate_metrics(y_true, y_pred):
-    # Convert class names to binary labels
+    # convert class names to binary labels
     classes = list(set(y_true))
     y_true_binary = [1 if y == classes[0] else 0 for y in y_true]
     y_pred_binary = [1 if y == classes[0] else 0 for y in y_pred]
 
-    auroc = roc_auc_score(y_true_binary, y_pred_binary)
+    #print("Unique classes in y_true:", set(y_true))
+    #print("Unique classes in y_pred:", set(y_pred))
+    #print("y_true:", y_true)
+    #print("y_pred:", y_pred)
+
+    # auroc only possible with atleast 1 TP
+    if len(set(y_true_binary)) == 1:
+        auroc = None
+    else:
+        auroc = roc_auc_score(y_true_binary, y_pred_binary)
     balanced_acc = balanced_accuracy_score(y_true_binary, y_pred_binary)
     
     precision, recall, _ = precision_recall_curve(y_true_binary, y_pred_binary)
@@ -53,10 +63,16 @@ def main(data_dir):
     data = load_json_files(data_dir)
     y_true, y_pred = extract_labels_and_predictions(data)
     auroc, balanced_acc, auprc = calculate_metrics(y_true, y_pred)
-    print(f"AUROC: {auroc}")
+
+    # when no tps are present
+    if auroc is not None:
+        print(f"AUROC: {auroc}")
+    else:
+        print("AUROC: Not defined (only one class present in y_true)")
+
     print(f"AUPRC: {auprc}")
     print(f"Balanced Accuracy: {balanced_acc}")
 
 if __name__ == "__main__":
-    data_dir = "C:/wagon/code/biosonic_local/batdetect2/data/results_placeholder"
+    data_dir = "C:/wagon/code/biosonic_local/batdetect2/data/results"
     main(data_dir)
