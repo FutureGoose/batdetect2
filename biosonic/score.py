@@ -13,11 +13,13 @@ import os
 import json
 import glob
 from pathlib import Path
-from sklearn.metrics import roc_auc_score, balanced_accuracy_score, precision_recall_curve, auc
+from sklearn.metrics import (roc_auc_score, balanced_accuracy_score, 
+                             precision_recall_curve, auc, accuracy_score, 
+                             precision_score, recall_score, confusion_matrix)
 
 
 # classification threshold
-THRESHOLD = 0.7
+THRESHOLD = 0.5
 
 
 def load_json_files(data_dir):
@@ -105,28 +107,49 @@ def calculate_metrics(y_true, y_pred):
     else:
         auroc = roc_auc_score(y_true_binary, y_scores)
 
+    # balanced accuracy
     balanced_acc = balanced_accuracy_score(y_true_binary, y_pred_binary)
+    # precision and recall arrays for precision-recall curve (auprc)
     precision, recall, _ = precision_recall_curve(y_true_binary, y_scores)
     auprc = auc(recall, precision)
+
+    # additional metrics
+    accuracy = accuracy_score(y_true_binary, y_pred_binary)
+    precision = precision_score(y_true_binary, y_pred_binary)
+    recall = recall_score(y_true_binary, y_pred_binary)
+
+    # cm to calc specificity
+    tn, fp, fn, tp = confusion_matrix(y_true_binary, y_pred_binary).ravel()
+    specificity = tn / (tn + fp)
     
-    return auroc, balanced_acc, auprc
+    return auroc, balanced_acc, auprc, accuracy, precision, recall, specificity
 
 
 def main(data_dir):
+    # load json files
     data = load_json_files(data_dir)
+    # get predictions
     y_true, y_pred = extract_labels_and_predictions(data)
-    auroc, balanced_acc, auprc = calculate_metrics(y_true, y_pred)
+    # get metrics
+    auroc, balanced_acc, auprc, accuracy, precision, recall, specificity = calculate_metrics(y_true, y_pred)
 
-    # when no tps are present
+    # print results
+    print(f"        Threshold: {THRESHOLD}")
     if auroc is not None:
-        print(f"AUROC: {auroc}")
+        print(f"            AUROC: {auroc}")
     else:
         print("AUROC: Not defined (only one class present in y_true)")
 
-    print(f"AUPRC: {auprc}")
-    print(f"Balanced Accuracy: {balanced_acc}")
+    # print results
+    print(f"            AUPRC: {auprc}")
+    print(f"Balanced Accuracy: {balanced_acc}\n")
+    print(f"         Accuracy: {accuracy}")
+    print(f"        Precision: {precision}")
+    print(f"           Recall: {recall}")
+    print(f"      Specificity: {specificity}")
 
 if __name__ == "__main__":
+    # universal path handling
     script_dir = Path(__file__).resolve().parent
     data_dir = (script_dir / "../data/results").resolve()
     print(f"Data directory: {data_dir}")
