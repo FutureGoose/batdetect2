@@ -16,6 +16,10 @@ from pathlib import Path
 from sklearn.metrics import roc_auc_score, balanced_accuracy_score, precision_recall_curve, auc
 
 
+# classification threshold
+THRESHOLD = 0.7
+
+
 def load_json_files(data_dir):
     json_files = glob.glob(os.path.join(data_dir, '**/*.json'), recursive=True)
     print(f"Found {len(json_files)} JSON files.\n")
@@ -51,10 +55,16 @@ def extract_labels_and_predictions(data):
     y_true = []
     y_pred = []
     for entry in data:
+        # extract true class from filename
         true_class = extract_true_label(entry['id'])
         for annotation in entry['annotation']:
             y_true.append(true_class)
-            y_pred.append((annotation['class'], annotation['class_prob']))
+            # if predicted class matches true class, use class_prob
+            if annotation['class'] == true_class:
+                y_pred.append((annotation['class'], annotation['class_prob']))
+            # if predicted class does not match true class, use 1 - class_prob
+            else:
+                y_pred.append((annotation['class'], 1 - annotation['class_prob']))
     
     return y_true, y_pred
 
@@ -72,15 +82,15 @@ def calculate_metrics(y_true, y_pred):
         y_scores.append(y_pred[i][1])
 
         # True Positive: Prediction and actual are the same, and probability is above threshold
-        if y_true[i] == y_pred[i][0] and y_pred[i][1] >= 0.5:
+        if y_true[i] == y_pred[i][0] and y_pred[i][1] >= THRESHOLD:
             y_true_binary.append(1)
             y_pred_binary.append(1)
         # False Negative: Prediction and actual are the same, but probability is below threshold
-        elif y_true[i] == y_pred[i][0] and y_pred[i][1] < 0.5:
+        elif y_true[i] == y_pred[i][0] and y_pred[i][1] < THRESHOLD:
             y_true_binary.append(1)
             y_pred_binary.append(0)
         # False Positive: Prediction and actual are different, but probability is above threshold
-        elif y_true[i] != y_pred[i][0] and y_pred[i][1] >= 0.5:
+        elif y_true[i] != y_pred[i][0] and y_pred[i][1] >= THRESHOLD:
             y_true_binary.append(0)
             y_pred_binary.append(1)
         # True Negative: Prediction and actual are different, and probability is below threshold
